@@ -3,7 +3,13 @@ class RedirectController < ApplicationController
     @code = "<not found>"
     if params.has_key?(:code)
       @code = params[:code]
-      get_token(@code)
+      body = get_token(@code)
+
+      puts "access token:"
+      @access_token = body["access_token"]
+
+      puts "refresh token:"
+      @refresh_token = body["refresh_token"]
     end
   end
 
@@ -23,11 +29,12 @@ class RedirectController < ApplicationController
       :code => code,
     })
 
-    puts "response from server"
+    puts "response status from server:"
     puts response.status
-    puts response.body
-  rescue HTTP::Error
-    puts "rescuring some sort of http error"
 
+    body = JSON.parse(response.body)
+    return body
+  rescue HTTP::Error
+    puts "some sort of http error"
   end
 end

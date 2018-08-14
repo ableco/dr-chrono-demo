@@ -1,1 +1,38 @@
+<script>
+function getPatientList() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      console.log('Got a response back from the AJAX request')
+      console.log(this.responseText)
+    }
+  };
+
+  xhttp.open("GET", "/phi/patients?access_token=<%= @access_token %>", true)
+  xhttp.send()
+}
+
+</script>
+
 <h3>Redirected back from drchrono with code: <%= @code %></h3>
+<table>
+  <tbody>
+    <tr>
+      <td>
+        <label>ACCESS TOKEN:</label>
+      </td>
+      <td>
+        <input id="access_token" type="text" style="width: 300px;" value="<%= @access_token %>" />
+      </td>
+    <tr>
+    <tr>
+      <td>
+        <label>REFRESH TOKEN:</label>
+      </td>
+      <td>
+        <input id="refresh_token" type="text" style="width: 300px;" value="<%= @refresh_token %>" />
+      </td>
+    <tr>
+  </tbody>
+</table>
+<button onClick="getPatientList()">Get Patient List</button>

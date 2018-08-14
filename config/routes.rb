@@ -4,4 +4,6 @@ Rails.application.routes.draw do
   root 'welcome#index'
 
   get 'redirect' => 'redirect#index'
+
+  get 'phi/patients' => 'phi#patients'
 end
