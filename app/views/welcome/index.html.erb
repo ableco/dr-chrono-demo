@@ -1,0 +1,49 @@
+<script>
+
+function redirectToDrChrono() {
+
+  var redirect_uri = document.getElementById('redirect_uri')
+  var redirect_uri_value = redirect_uri.value
+  console.log('redirect_url', redirect_uri_value)
+
+  var client_id = document.getElementById('client_id')
+  var client_id_value = client_id.value
+  console.log('client_id', client_id_value)
+
+  document.location = 'https://drchrono.com/o/authorize/?redirect_uri='
+  + redirect_uri_value + '&client_id=' + client_id_value + '&response_type=code'
+}
+
+</script>
+
+<h1>Hello, drchrono</h1>
+<table>
+  <tbody>
+    <tr>
+      <td>
+        <label>REDIRECT URI:</label>
+      </td>
+      <td>
+        <input id="redirect_uri" type="text" style="width: 300px;" value="http://localhost:3000/redirect" />
+      </td>
+    <tr>
+    <tr>
+      <td>
+        <label>CLIENT ID:</label>
+      </td>
+      <td>
+        <input id="client_id" type="text" style="width: 300px;" value="<%= @client_id %>" />
+      </td>
+    <tr>
+    <!-- <tr>
+      <td>
+        <label>SCOPES:</label>
+      </td>
+      <td>
+        <input name="client_id" type="text" style="width: 300px;" />
+      </td>
+    <tr> -->
+  </tbody>
+</table>
+
+<button onClick="redirectToDrChrono()">Connect to drchrono</button>
