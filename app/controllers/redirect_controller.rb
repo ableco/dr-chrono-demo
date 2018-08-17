@@ -5,11 +5,13 @@ class RedirectController < ApplicationController
       @code = params[:code]
       body = get_token(@code)
 
-      puts "access token:"
       @access_token = body["access_token"]
-
-      puts "refresh token:"
       @refresh_token = body["refresh_token"]
+
+      if @access_token && @access_token.length != 0
+        cookies["tractus_access_token"] = @access_token
+      end
+
     end
   end
 
@@ -33,6 +35,8 @@ class RedirectController < ApplicationController
     puts response.status
 
     body = JSON.parse(response.body)
+
+
     return body
   rescue HTTP::Error
     puts "some sort of http error"
