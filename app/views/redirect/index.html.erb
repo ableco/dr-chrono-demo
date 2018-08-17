@@ -7,7 +7,8 @@ function getPatientList() {
       var html = ''
       var data = response.results
       for(i = 0; i < data.length; i++) {
-        html += '<div>' + data[i].first_name + ' ' + data[i].last_name + ' - ' + data[i].id + '</div>'
+        html += '<div><span>' + data[i].first_name + ' ' + data[i].last_name + '</span>'
+        html += '<button onClick="getLabResults(' + data[i].id + ')">Get Lab Results</button></div>'
       }
       var listDiv = document.getElementById('patient-list')
       listDiv.innerHTML = html
@@ -39,6 +40,22 @@ function showAccessToken() {
   console.log('tractus_access_token::')
   var token = getCookie("tractus_access_token")
   console.log(token)
+}
+
+function getLabResults(patient_id) {
+  console.log('get lab results')
+  console.log(patient_id)
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var response = JSON.parse(this.response)
+      console.log(response)
+    }
+  };
+
+  var access_token = getCookie("tractus_access_token")
+  xhttp.open("GET", "/phi/lab_results?access_token=" + access_token + "&patient_id=" + patient_id, true)
+  xhttp.send()
 }
 
 </script>
