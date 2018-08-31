@@ -4,12 +4,13 @@ function getPatientList() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var response = JSON.parse(this.response)
-      var html = ''
+      var html = '<ul>'
       var data = response.results
       for(i = 0; i < data.length; i++) {
-        html += '<div><span>' + data[i].first_name + ' ' + data[i].last_name + '</span>'
-        html += '<button onClick="getLabResults(' + data[i].id + ')">Get Lab Results</button></div>'
+        html += '<li><span>' + data[i].first_name + ' ' + data[i].last_name + '</span>'
+        html += '<button onClick="getLabResults(' + data[i].id + ')">Get Lab Results</button></li>'
       }
+      html += '</ul>'
       var listDiv = document.getElementById('patient-list')
       listDiv.innerHTML = html
     }
@@ -50,6 +51,41 @@ function getLabResults(patient_id) {
     if (this.readyState == 4 && this.status == 200) {
       var response = JSON.parse(this.response)
       console.log(response)
+
+      var data = response.results
+      var groupedByTestCode = {}
+      for(i = 0; i < data.length; i++) {
+        if(groupedByTestCode[data[i].test.code] == null) {
+          groupedByTestCode[data[i].test.code] = {
+            name: data[i].test.description,
+            tests: [],
+            code: data[i].test.code
+          }
+        }
+        groupedByTestCode[data[i].test.code].tests.push(data[i])
+      }
+      console.log(groupedByTestCode)
+
+      var html = '<div><h4>' + response.results.length + ' lab test results!</h4>'
+      html += '<ul>'
+      var codes = Object.keys(groupedByTestCode)
+      for(i = 0; i < codes.length; i++) {
+        var group = groupedByTestCode[codes[i]]
+        html += '<li><div>' + group.name + ' (code ' + group.code + ')</div>'
+        html += '<div><label>tests:</label></div>'
+        html += '<ul>'
+        for(j = 0; j < group.tests.length; j++) {
+          html += '<li>'
+          html += '<div><label>test: </label>' + group.tests[j].obs_description + '</div>'
+          html += '<div><label>value: </label>' + group.tests[j].value + '</div>'
+          html += '<div><label>normal range: </label>' + group.tests[j].normal_range + '</div>'
+          html += '</li>'
+        }
+        html += '</ul>'
+      }
+
+      var listDiv = document.getElementById('test-results-list')
+      listDiv.innerHTML = html
     }
   };
 
@@ -61,6 +97,17 @@ function getLabResults(patient_id) {
 </script>
 
 <h3>Redirected back from drchrono with code: <%= @code %></h3>
-<button style="" onClick="getPatientList()">Get Patient List</button>
-<div id="patient-list"></div>
-<button onClick="showAccessToken()">Get Access Token!</button>
+
+<div style="display: flex; flex-direction: row; height: 500px;">
+  <div style="width: 300px;">
+    <h2>Patients</h2>
+    <button style="width: 100px; height: 40px;" onClick="getPatientList()">Get Patient List</button>
+    <div id="patient-list"></div>
+  </div>
+  <div>
+    <h2>Results</h2>
+    <div id="test-results-list"></div>
+  </div>
+</div>
+
+<!-- <button onClick="showAccessToken()">Get Access Token!</button> -->
