@@ -1,3 +1,5 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
 <script>
 function getPatientList() {
   var xhttp = new XMLHttpRequest();
@@ -106,7 +108,7 @@ function parseResultNumbers(normalRange, value, unit) {
 
   if(normalRange.indexOf('<') == 0) {
     var upper = parseFloat(normalRange.substr(1))
-    if (!isNaN(lower)) {
+    if (!isNaN(upper)) {
       results.isUpperLimit = true
       results.normalValues.upper = upper
       results.values.value = parseFloat(value)
@@ -180,18 +182,22 @@ function getLabResults(patient_id) {
 
               if (results.isRange) {
                 html += '<div><b>type: RANGE</b></div>'
-                html += '<div><label>lower: </label>' + results.normalValues.lower + '</div>'
-                html += '<div><label>upper: </label>' + results.normalValues.upper + '</div>'
+                html += '<div><b><label>lower: </label>' + results.normalValues.lower + ' ' + results.values.unit + '</b></div>'
+                html += '<div><b><label>upper: </label>' + results.normalValues.upper + ' ' + results.values.unit + '</b></div>'
+                html += '<div><b><label>value: </label>' + results.values.value + ' ' + results.values.unit + '</b></div>'
+                html += '<div><button onClick="makeBoxPlot(\'' + group.tests[j].obs_description + '\',' + results.normalValues.lower + ',' + results.normalValues.upper + ',' + results.values.value + ',\'' + results.values.unit + '\'' + ')">Show Chart</button></div>'
               }
 
               if (results.isUpperLimit) {
-                html += '<div><b>type: LOWER LIMIT</b></div>'
-                html += '<div><label>upper: </label>' + results.normalValues.upper + '</div>'
+                html += '<div><b>type: UPPER LIMIT</b></div>'
+                html += '<div><b><label>upper: </label>' + results.normalValues.upper + ' ' + results.values.unit + '</b></div>'
+                html += '<div><b><label>value: </label>' + results.values.value + ' ' + results.values.unit + '</b></div>'
               }
 
               if (results.isLowerLimit) {
-                html += '<div><b>type: UPPER LIMIT</b></div>'
-                html += '<div><label>lower: </label>' + results.normalValues.lower + '</div>'
+                html += '<div><b>type: LOWER LIMIT</b></div>'
+                html += '<div><b><label>lower: </label>' + results.normalValues.lower + ' ' + results.values.unit + '</b></div>'
+                html += '<div><b><label>value: </label>' + results.values.value + ' ' + results.values.unit + '</b></div>'
               }
             }
           }
@@ -211,6 +217,40 @@ function getLabResults(patient_id) {
   xhttp.send()
 }
 
+
+function makeBoxPlot(name, lower, upper, value, units) {
+
+  Highcharts.chart('container', {
+
+  chart: {
+    type: 'boxplot',
+    inverted: true
+  },
+
+  title: {
+    text: name,
+  },
+
+  legend: {
+    enabled: false
+  },
+
+  yAxis: {
+    title: {
+      text: units
+    },
+  },
+
+  series: [{
+    name: 'Observations',
+    data: [
+      [lower-5, lower, value, upper, upper + 5]
+    ],
+  }]
+
+});
+}
+
 </script>
 
 <h3>Redirected back from drchrono with code: <%= @code %></h3>
@@ -225,6 +265,5 @@ function getLabResults(patient_id) {
     <h2>Results</h2>
     <div id="test-results-list"></div>
   </div>
+  <div id="container" style="height: 200px; min-width: 310px; max-width: 600px"></div>
 </div>
-
-<!-- <button onClick="showAccessToken()">Get Access Token!</button> -->
