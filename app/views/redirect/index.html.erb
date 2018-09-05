@@ -43,6 +43,83 @@ function showAccessToken() {
   console.log(token)
 }
 
+function parseResultNumbers(normalRange, value, unit) {
+  var results = {
+    isParseable: true,
+    isReported: true,
+    isRange: false,
+    isLowerLimit: false,
+    isUpperLimit: false,
+    isBoolean: false,
+    normalValues: {
+      lower: null,
+      upper: null,
+      reactive: null,
+    },
+    values: {
+      reactive: null,
+      value: null,
+      unit: null,
+    }
+  }
+
+  // First check for if it's reported
+  if (value == 'DNR') {
+    results.isReported = false;
+    return results
+  }
+
+  // Next check for boolean reactive / nonreactive
+  if (normalRange == 'NON-REACTIVE' || normalRange == 'REACTIVE') {
+    results.isBoolean = true
+    results.normalValues.reactive = (normalRange == 'REACTIVE')
+    results.values.reactive = (value == 'REACTIVE')
+    return results
+  }
+
+  // Next check for ranges
+  var indexOfDash = normalRange.indexOf('-')
+  if (indexOfDash > -1) {
+    var lower = parseFloat(normalRange.substr(0, indexOfDash))
+    var upper = parseFloat(normalRange.substr(indexOfDash + 1))
+    if (!isNaN(lower) && !isNaN(lower)) {
+      results.isRange = true
+      results.normalValues.lower = lower
+      results.normalValues.upper = upper
+      results.values.value = parseFloat(value)
+      results.values.unit = unit
+      return results
+    }
+  }
+
+  //Next check for lower limit
+  if(normalRange.indexOf('>') == 0) {
+    var lower = parseFloat(normalRange.substr(1))
+    if (!isNaN(lower)) {
+      results.isLowerLimit = true
+      results.normalValues.lower = lower
+      results.values.value = parseFloat(value)
+      results.values.unit = unit
+      return results
+    }
+  }
+
+  if(normalRange.indexOf('<') == 0) {
+    var upper = parseFloat(normalRange.substr(1))
+    if (!isNaN(lower)) {
+      results.isUpperLimit = true
+      results.normalValues.upper = upper
+      results.values.value = parseFloat(value)
+      results.values.unit = unit
+      return results
+    }
+  }
+
+  results.isParseable = false
+  return results;
+}
+
+
 function getLabResults(patient_id) {
   console.log('get lab results')
   console.log(patient_id)
@@ -75,10 +152,50 @@ function getLabResults(patient_id) {
         html += '<div><label>tests:</label></div>'
         html += '<ul>'
         for(j = 0; j < group.tests.length; j++) {
+          var normalRange = group.tests[j].normal_range
+
+
           html += '<li>'
-          html += '<div><label>test: </label>' + group.tests[j].obs_description + '</div>'
-          html += '<div><label>value: </label>' + group.tests[j].value + '</div>'
-          html += '<div><label>normal range: </label>' + group.tests[j].normal_range + '</div>'
+          html += '<div><label>test: </label>' + group.tests[j].obs_description
+          html += ', <label>value: </label>' + group.tests[j].value
+          html += ', <label>unit: </label>' + group.tests[j].unit
+          html += ', <label>normal range: </label>' + group.tests[j].normal_range + '</div>'
+
+          var results = parseResultNumbers(normalRange, group.tests[j].value, group.tests[j].unit)
+          if (!results.isParseable) {
+            html += '<div style="color:red">NOT ABLE TO PARSE</div>'
+          } else {
+            if (!results.isReported) {
+                html += '<div style="color:orange">DID NOT REPORT</div>'
+            } else {
+
+              if (results.isBoolean) {
+                html += '<div><b>type: BOOLEAN</b></div>'
+                if (results.normalValues.reactive == results.values.reactive) {
+                  html += '<div>value is the same as normal</div>'
+                } else {
+                  html += '<div>value is <b>NOT</b> the same as normal</div>'
+                }
+              }
+
+              if (results.isRange) {
+                html += '<div><b>type: RANGE</b></div>'
+                html += '<div><label>lower: </label>' + results.normalValues.lower + '</div>'
+                html += '<div><label>upper: </label>' + results.normalValues.upper + '</div>'
+              }
+
+              if (results.isUpperLimit) {
+                html += '<div><b>type: LOWER LIMIT</b></div>'
+                html += '<div><label>upper: </label>' + results.normalValues.upper + '</div>'
+              }
+
+              if (results.isLowerLimit) {
+                html += '<div><b>type: UPPER LIMIT</b></div>'
+                html += '<div><label>lower: </label>' + results.normalValues.lower + '</div>'
+              }
+            }
+          }
+
           html += '</li>'
         }
         html += '</ul>'
